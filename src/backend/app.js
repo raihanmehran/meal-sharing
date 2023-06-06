@@ -22,6 +22,10 @@ app.use(cors());
 
 router.use("/meals", mealsRouter);
 
+app.get("/my-route", async (req, res) => {
+  res.send("Hi friend");
+});
+
 if (process.env.API_PATH) {
   app.use(process.env.API_PATH, router);
 } else {
