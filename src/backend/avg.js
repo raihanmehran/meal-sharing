@@ -1,5 +1,5 @@
+// NICK
 console.time();
-// Extract the numbers from command line arguments
 const numbers = process.argv.slice(2).map(Number);
 if (numbers.length <= 0) {
   console.log("Needs some arguments");
@@ -13,7 +13,7 @@ if (numbers.some((item) => isNaN(item))) {
 }
 console.timeEnd();
 
-// Warmup
+// hamoud
 console.time();
 const arg = process.argv.slice(2);
 if (arg.length === 0) {
@@ -25,5 +25,21 @@ if (arg.length === 0) {
   } else {
     console.log(average);
   }
+}
+console.timeEnd();
+
+
+// NELIA
+console.time();
+const newArr = process.argv.slice(2);
+if (newArr.length === 0) {
+  console.log("You did not provide arguments");
+  return;
+} else {
+  const avg =
+    newArr.reduce((acc, val) => Number(acc) + Number(val)) / newArr.length;
+  isNaN(avg)
+    ? console.log("Provided arguments are not numbers")
+    : console.log(avg);
 }
 console.timeEnd();
