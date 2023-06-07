@@ -63,17 +63,41 @@ router.get("/first-meal", async (req, res) => {
 });
 
 // 	Respond with the last meal (meaning with the maximum id)
-router.get("/last-meal", async (req, res) => {
-  try {
-    const meal = await knex.raw("SELECT * FROM meal ORDER BY id desc limit 1");
-    if (meal) {
-      res.status(200).json(meal[0][0]);
-    } else {
-      res.status(404).json("there are no meals");
+// router.get("/last-meal", async (req, res) => {
+//   try {
+//     const meal = await knex.raw("SELECT * FROM meal ORDER BY id desc limit 1");
+//     if (meal) {
+//       res.status(200).json(meal[0][0]);
+//     } else {
+//       res.status(404).json("there are no meals");
+//     }
+//   } catch (e) {
+//     res.status(500).json(e);
+//   }
+// });
+
+router.get(
+  '/last-meal',
+  getMeals('SELECT * FROM meal ORDER BY id DESC LIMIT 1', 404)
+);
+
+function getMeals(query, status = 200) {
+  return async (req, res) => {
+    try {
+      const meals = await knex.raw(query);
+      if (meals.length > 1 && meals[0].length > 0) {
+        res.status(200).json(meals[0]);
+      } else {
+        if (status === 200) {
+          res.status(200).json("");
+        } else if (status === 404) {
+          res.status(404).json("There are no meals");
+        }
+      }
+    } catch (e) {
+      res.status(500).json(e.message);
     }
-  } catch (e) {
-    res.status(500).json(e);
-  }
-});
+  };
+}
 
 module.exports = router;
