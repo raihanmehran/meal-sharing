@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const knex = require("../database");
+const moment = require("moment");
 
 router.get("/", async (request, response) => {
   try {
@@ -61,6 +62,87 @@ router.get("/first-meal", async (req, res) => {
     res.status(500).json(e);
   }
 });
+router.get("/:id", async (req, res) => {
+  try {
+    const meal = await knex.raw(
+      `SELECT * FROM meal WHERE ID = ${req.params.id}`
+    );
+    if (meal) {
+      res.status(200).json(meal[0][0]);
+    } else {
+      res.status(404).json("there are no meals");
+    }
+  } catch (e) {
+    res.status(500).json(e);
+  }
+});
+
+// First Post Method
+router.post("/add", async (req, res) => {
+  try {
+    const meal = {
+      title: req.body.title,
+      description: req.body.description,
+      location: req.body.location,
+      price: req.body.price,
+      max_reservations: parseInt(req.body.max_reservations),
+      when_datetime: moment().format("YYYY-MM-DD"),
+      created_date: moment().format("YYYY-MM-DD"),
+    };
+    console.log(meal);
+    let query = `INSERT INTO meal (title, description, location, max_reservations, price) VALUES ('${meal.title}', '${meal.description}', '${meal.location}',${meal.max_reservations}, ${meal.price} )`;
+
+    await knex.raw(query);
+
+    console.log("User added");
+
+    res.status(200).json("Hi");
+  } catch (e) {
+    res.status(500).json(e);
+  }
+});
+
+router.put("/update", async (req, res) => {
+  try {
+    const meal = {
+      id: parseInt(req.body.id),
+      title: req.body.title,
+      description: req.body.description,
+      location: req.body.location,
+      price: req.body.price,
+      max_reservations: req.body.max_reservations,
+    };
+
+    const isExist = await knex.raw("SELECT * FROM meal WHERE id =" + meal.id);
+    if (isExist[0][0]) {
+      console.log(isExist[0][0]);
+      res.status(200).json("Updated");
+    } else {
+      res.status(400).json("Bad request: No meal found with id :" + meal.id);
+    }
+  } catch (e) {
+    res.status(500).json(e);
+  }
+});
+
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (!id) return res.status(400).json("id not provied");
+
+    const isExist = await knex.raw(
+      "SELECT * FROM meal WHERE id =" + req.params.id
+    );
+    if (isExist[0][0]) {
+      // write code for delettion of the meal
+      res.status(200).json("Deleted");
+    } else {
+      res.status(400).json("Bad request: No meal found with id :" + meal.id);
+    }
+  } catch (e) {
+    res.status(500).json(e);
+  }
+});
 
 // 	Respond with the last meal (meaning with the maximum id)
 // router.get("/last-meal", async (req, res) => {
@@ -77,8 +159,8 @@ router.get("/first-meal", async (req, res) => {
 // });
 
 router.get(
-  '/last-meal',
-  getMeals('SELECT * FROM meal ORDER BY id DESC LIMIT 1', 404)
+  "/last-meal",
+  getMeals("SELECT * FROM meal ORDER BY id DESC LIMIT 1", 404)
 );
 
 function getMeals(query, status = 200) {

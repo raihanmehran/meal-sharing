@@ -7,7 +7,7 @@ const mealsRouter = require("./api/meals");
 const buildPath = path.join(__dirname, "../../dist");
 const port = process.env.PORT || 3000;
 const cors = require("cors");
-const { log } = require("console");
+const logger = require("./middlewares/logger");
 
 // For week4 no need to look into this!
 // Serve the built client html
@@ -15,10 +15,14 @@ app.use(express.static(buildPath));
 
 // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.urlencoded({ extended: true }));
+
 // Parse JSON bodies (as sent by API clients)
 app.use(express.json());
 
 app.use(cors());
+
+// Initial Middleware
+app.use(logger);
 
 router.use("/meals", mealsRouter);
 
