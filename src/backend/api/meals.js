@@ -4,88 +4,104 @@ const knex = require("../database");
 const moment = require("moment");
 
 // http://localhost:5000/api/meals	GET,	Returns all meals
-router.get("/", async (req, res) => {
-  try {
-    console.log("hi");
-    const meals = await knex("meal").select("id", "title");
+// router.get("/", async (req, res) => {
+//   try {
+//     console.log("hi");
+//     const meals = await knex("meal").select("id", "title");
 
-    meals.length === 0
-      ? res.status(404).send("Meals not found")
-      : res.status(200).send(meals);
-  } catch (error) {
-    res.status(500).json(error);
-  }
-});
+//     meals.length === 0
+//       ? res.status(404).send("Meals not found")
+//       : res.status(200).send(meals);
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// });
 
 // /api/meals	POST, Adds a new meal to the database
-router.post("/", async (req, res) => {
-  try {
-    const meal = req.body;
+// router.post("/", async (req, response) => {
+//   try {
+//     const meal = req.body;
 
-    const addMeal = await knex("meal").insert(meal);
-    console.log(addMeal.status);
-    console.log(addMeal);
-    res.status(201).send({ message: "Added meal" });
-  } catch (error) {
-    res.status(500).json(error);
-  }
-});
+//     const addMeal = await knex("meal").insert(meal);
+//     console.log(addMeal.status);
+//     console.log(addMeal);
+//     res.status(201).send({ message: "Added meal" });
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// });
 
 // /api/meals/:id	GET,	Returns the meal by id
+// router.get("/:id", async (req, res) => {
+//   try {
+//     const id = Number(req.params.id);
+
+//     const meal = await knex("meal").select("id", "title").where({ id });
+
+//     meal.length === 0
+//       ? res.status(404).send("Meal not found")
+//       : res.status(200).send(meal);
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// });
+
 router.get("/:id", async (req, res) => {
-  try {
-    const id = Number(req.params.id);
-
-    const meal = await knex("meal").select("id", "title").where({ id });
-
-    meal.length === 0
-      ? res.status(404).send("Meal not found")
-      : res.status(200).send(meal);
-  } catch (error) {
-    res.status(500).json(error);
+  const id = req.params.id;
+  if (isNaN(id)) {
+    res.status(404).json(` ${id} not valide please provide a number`);
+  } else {
+    try {
+      const meal = await knex("meal").select("title").where({ id });
+      meal.length === 0
+        ? res.status(200).json("no meal with this id")
+        : res.status(200).json(meal);
+    } catch (err) {
+      res.status(500).json(err);
+    }
   }
 });
+// // /api/meals/:id PUT,	Updates the meal by id
+// router.put("/:id", async (req, res) => {
+//   try {
+//     const id = Number(req.params.id);
+//     const meal = req.body;
 
-// /api/meals/:id PUT,	Updates the meal by id
-router.put("/:id", async (req, res) => {
-  try {
-    const id = Number(req.params.id);
-    const meal = req.body;
+//     const meals = await knex("meal").select("id");
+//     console.log(meals);
+//     const updateMeal = await knex("meal").where({ id }).update(meal);
 
-    const meals = await knex("meal").select("id");
-    console.log(meals);
-    const updateMeal = await knex("meal").where({ id }).update(meal);
+//     id > meals.length
+//       ? res.status(404).send("Meal not found")
+//       : res.status(200).send({ message: "Updated meal" });
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// });
 
-    id > meals.length
-      ? res.status(404).send("Meal not found")
-      : res.status(200).send({ message: "Updated meal" });
-  } catch (error) {
-    res.status(500).json(error);
-  }
-});
+// // /api/meals/:id	DELETE,	Deletes the meal by id
+// router.delete("/:id", async (req, res) => {
+//   try {
+//     const id = Number(req.params.id);
 
-// /api/meals/:id	DELETE,	Deletes the meal by id
-router.delete("/:id", async (req, res) => {
-  try {
-    const id = Number(req.params.id);
+//     const meals = await knex("meal").select("id");
+//     const deleteMeal = await knex("meal").where({ id }).del();
 
-    const meals = await knex("meal").select("id");
-    const deleteMeal = await knex("meal").where({ id }).del();
-
-    id > meals.length
-      ? res.status(404).send("Meal not found")
-      : res.status(200).send({ message: "Deleted meal" });
-  } catch (error) {
-    res.status(500).json(error);
-  }
-});
+//     id > meals.length
+//       ? res.status(404).send("Meal not found")
+//       : res.status(200).send({ message: "Deleted meal" });
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// });
 
 router.get("/", async (request, response) => {
   try {
+    console.log("hi");
     // knex syntax for selecting things. Look up the documentation for knex for further info
     const titles = await knex("meal").select("title");
     console.log(titles);
-    response.json(titles);
+    response.send(titles);
   } catch (error) {
     throw error;
   }

@@ -33,89 +33,178 @@ app.get("/my-route", async (req, res) => {
   res.send("Hi friend");
 });
 
-// WEEK1 warm ups: HAMOUDI
+// WEEK1 warmups: REMYA
+//GET /search
 app.get("/search", (req, res) => {
-  try {
-    const query = req.query.q;
-    if (!query) {
-      res.status(200).json(documents);
-    } else if (!isNaN(query)) {
-      const result = documents.filter((e) => e.id === query);
-      console.log("s");
-      result.length === 0
-        ? res.status(200).json(documents)
-        : res.status(200).json(result);
+  const { q } = req.query;
+
+  if (!q) {
+    // Return all documents if 'q' parameter is not provided
+    res.json(documents);
+  } else {
+    // Filter documents based on the 'q' parameter
+    const results = documents.filter((document) => {
+      const documentValues = Object.values(document);
+      return documentValues.some((value) => {
+        if (typeof value === "string" && value.includes(q)) {
+          return true;
+        }
+        return false;
+      });
+    });
+
+    if (results.length > 0) {
+      res.json(results);
     } else {
-      const result = documents.filter((e) =>
-        Object.values(e).some(
-          (v) =>
-            typeof v === "string" &&
-            v.toLowerCase().includes(query.toLowerCase())
-        )
-      );
-      result.length === 0
-        ? res.status(200).json(documents)
-        : res.status(200).json(result);
+      res.status(400).json({ msg: `No documents found for the query: ${q}` });
     }
-  } catch (err) {
-    res.status(500).json(err);
   }
 });
+
 app.get("/documents/:id", (req, res) => {
-  try {
-    const id = req.params.id;
-    const result = documents.filter((e) => e.id === +id);
-    result.length === 0
-      ? res.status(404).json("no result with this id")
-      : res.status(200).json(result);
-  } catch (err) {
-    res.status(500).json(err);
-  }
+  // const found = documents.some(
+  //   (document) => document.id === parseInt(req.params.id)
+  // );
+  // if (found) {
+  //   res.json(
+  //     documents.filter((document) => document.id === parseInt(req.params.id))
+  //   );
+  // } else {
+  //   res.status(400).json({ msg: `No member with id of ${req.params.id}` });
+  // }
+
+  const id = req.params.id;
+  if (isNaN(id)) res.status(400).json({ msg: "Id is not a number" });
+  const document = documents.filter((doc) => doc.id === parseInt(id));
+  if (document) res.status(200).json(document);
+  else res.status(404).json({ msg: "Document does not exist" });
 });
+
+// POST/search
 app.post("/search", (req, res) => {
+  const { q } = req.query;
+  const { fields } = req.body;
+
+  if (q && fields) {
+    return res.status(400).json({
+      error:
+        "Both 'q' query parameter and 'fields' in the request body cannot be provided together.",
+    });
+  }
+  let results = documents;
+  if (q) {
+    results = results.filter((document) => {
+      const documentValues = Object.values(document);
+      return documentValues.some(
+        (value) => typeof value === "string" && value.includes(q)
+      );
+    });
+  } else if (fields) {
+    results = results.filter((document) =>
+      Object.entries(fields).every(
+        ([field, value]) => document[field] === value
+      )
+    );
+  }
+  res.json(results);
+});
+
+app.get("/:id", async (request, response) => {
   try {
-    const query = req.query.q;
-    const fields = req.body.fields;
-    console.log("hi");
-    if (!query && !fields) {
-      res.status(200).json(documents);
-      console.log("1");
-    } else if (!query && fields) {
-      console.log("2");
-      const result = documents.filter((e) =>
-        Object.entries(fields).every(([key, value]) => e[key] === value)
-      );
-      result.length === 0
-        ? res.status(404).json("no result with this id")
-        : res.status(200).json(result);
-    } else if (query && !fields) {
-      if (!isNaN(+query)) {
-        const result = documents.filter((e) => e.id === +query);
-        result.length === 0
-          ? res.status(200).json("no result found")
-          : res.status(200).json(result);
-      }
-      console.log("3");
-    } else if (query && fields) {
-      console.log("4");
-      res.status(400).json("Bad request");
-    } else {
-      console.log("5");
-      const result = documents.filter((e) =>
-        Object.values(e).some(
-          (v) =>
-            typeof v === "string" &&
-            v.toLowerCase().includes(query.toLowerCase())
-        )
-      );
-      result.length > 0
-        ? res.status(200).json("no result found")
-        : res.status(200).json(result);
+    const mealId = request.params.id;
+    // const meal = await knex("meal").where("id", mealId).first();
+    if (mealId) {
+      return res.status(404).json({ error: "meal not found" });
     }
-  } catch (err) {
-    res.status(500).json(err);
+    res.json(meal);
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// WEEK1 warm ups: HAMOUDI
+// app.get("/search", (req, res) => {
+//   try {
+//     const query = req.query.q;
+//     if (!query) {
+//       res.status(200).json(documents);
+//     } else if (!isNaN(query)) {
+//       const result = documents.filter((e) => e.id === query);
+//       console.log("s");
+//       result.length === 0
+//         ? res.status(200).json(documents)
+//         : res.status(200).json(result);
+//     } else {
+//       const result = documents.filter((e) =>
+//         Object.values(e).some(
+//           (v) =>
+//             typeof v === "string" &&
+//             v.toLowerCase().includes(query.toLowerCase())
+//         )
+//       );
+//       result.length === 0
+//         ? res.status(200).json(documents)
+//         : res.status(200).json(result);
+//     }
+//   } catch (err) {
+//     res.status(500).json(err);
+//   }
+// });
+// app.get("/documents/:id", (req, res) => {
+//   try {
+//     const id = req.params.id;
+//     const result = documents.filter((e) => e.id === +id);
+//     result.length === 0
+//       ? res.status(404).json("no result with this id")
+//       : res.status(200).json(result);
+//   } catch (err) {
+//     res.status(500).json(err);
+//   }
+// });
+// app.post("/search", (req, res) => {
+//   try {
+//     const query = req.query.q;
+//     const fields = req.body.fields;
+//     console.log("hi");
+//     if (!query && !fields) {
+//       res.status(200).json(documents);
+//       console.log("1");
+//     } else if (!query && fields) {
+//       console.log("2");
+//       const result = documents.filter((e) =>
+//         Object.entries(fields).every(([key, value]) => e[key] === value)
+//       );
+//       result.length === 0
+//         ? res.status(404).json("no result with this id")
+//         : res.status(200).json(result);
+//     } else if (query && !fields) {
+//       if (!isNaN(+query)) {
+//         const result = documents.filter((e) => e.id === +query);
+//         result.length === 0
+//           ? res.status(200).json("no result found")
+//           : res.status(200).json(result);
+//       }
+//       console.log("3");
+//     } else if (query && fields) {
+//       console.log("4");
+//       res.status(400).json("Bad request");
+//     } else {
+//       console.log("5");
+//       const result = documents.filter((e) =>
+//         Object.values(e).some(
+//           (v) =>
+//             typeof v === "string" &&
+//             v.toLowerCase().includes(query.toLowerCase())
+//         )
+//       );
+//       result.length > 0
+//         ? res.status(200).json("no result found")
+//         : res.status(200).json(result);
+//     }
+//   } catch (err) {
+//     res.status(500).json(err);
+//   }
+// });
 
 // WEEK2 warmup: NELIA
 // app.get("/search", async (req, res) => {
