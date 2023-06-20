@@ -93,3 +93,22 @@
 // const sum = numbers.reduce((acc, num) => acc + num, 0);
 // const average = sum / numbers.length;
 // console.log(average);
+
+// SAYALI
+
+const getCmdArgs = process.argv.slice(2);
+//console.log(getCmdArgs);
+
+if (getCmdArgs.length === 0) {
+  console.log("This is an empty array!");
+} else {
+  //The reduce() method does not execute the function for empty array elements.
+  const average =
+    getCmdArgs.reduce((prev, curr) => Number(prev) + Number(curr)) /
+    getCmdArgs.length;
+  if (isNaN(average)) {
+    console.log("Please provide numbers only!");
+  } else {
+    console.log("The average is " + average);
+  }
+}
